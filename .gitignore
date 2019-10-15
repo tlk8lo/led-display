@@ -1,1 +1,4 @@
 mux-driver/img
+mux-driver/muxd
+mux/*.elf
+
