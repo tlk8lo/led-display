@@ -15,7 +15,9 @@
 #include <termios.h>
 #include <assert.h>
 #include <signal.h>
-#include <libpng16/png.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 int alive = 1;
 int serialfd = -1;
@@ -123,118 +125,6 @@ void sighndl( int signum )
 	exit( 0 );
 }
 
-/**
-	Reads PNG file into array
-*/
-unsigned char *slurp_png( const char *filename, int *width, int *height, int *bpp )
-{
-	unsigned char *data = NULL;
-
-	assert( width && height && bpp );
-
-	FILE *f = fopen( filename, "rb" );
-	assert( f != NULL );
-	
-	png_structp png = png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );
-	assert( png != NULL );
-	
-	png_infop info = png_create_info_struct( png );
-	assert( info != NULL );
-	
-	if ( setjmp( png_jmpbuf( png ) ) )
-		assert( 0 && "PNG called longjmp()" );
-		
-	png_init_io( png, f );
-	png_read_info( png, info );
-	*width = png_get_image_width( png, info );
-	*height = png_get_image_height( png, info );
-	
-	if ( png_get_valid( png, info, PNG_INFO_tRNS ) )
-		png_set_tRNS_to_alpha( png );
-		
-	char has_alpha = 0;
-	switch ( png_get_color_type( png, info ) )
-	{
-		case PNG_COLOR_TYPE_GRAY:
-			assert( 0 && "fuck that" );
-			png_set_gray_to_rgb( png );
-			has_alpha = 0;
-			break;
-		
-		case PNG_COLOR_TYPE_GRAY_ALPHA:
-			assert( 0 && "fuck that" );
-			png_set_gray_to_rgb( png );
-			has_alpha = 1;
-			break;
-			
-		case PNG_COLOR_TYPE_PALETTE:
-			//assert( 0 && "fuck palletes!" );
-			png_set_expand( png );
-			has_alpha = 0;
-			break;
-			
-		case PNG_COLOR_TYPE_RGBA:
-			has_alpha = 1;
-			break;
-			
-		default:
-			assert( 0 && "Unhandled PNG type" );
-			break;
-	}
-	
-	png_set_interlace_handling( png );
-	png_read_update_info( png, info );
-	
-	*bpp = has_alpha ? 4 : 3;
-	
-	//assert( !has_alpha && "PNG has alpha channel and I'm fucking lazy" );
-	
-	data = calloc( *bpp * *width * *height, sizeof( unsigned char ) );
-	assert( data && "calloc() failed on `data`" );
-	
-	
-	png_bytep *rows = calloc( *height, sizeof( png_bytep ) );
-	assert( rows && "calloc() failed on `data`" );
-	unsigned char *p = data;
-	int i;
-	for ( i = 0; i < *height; i++ )
-	{
-		rows[i] = p;
-		p += *width * *bpp;
-	}
-	
-	png_read_image( png, rows );
-	
-	free( rows );
-	png_read_end( png, NULL );
-	png_destroy_info_struct( png, &info );
-	png_destroy_read_struct( &png, &info, NULL );
-	fclose( f );
-	 
-	
-	if ( data ) printf( "Done reading %dx%d PNG\n", *width, *height );
-	return data;
-}
-
-unsigned char *discard_alpha( unsigned char *image, int size )
-{
-	assert( image && size );
-	unsigned char *data = calloc( size * 3.f / 4.f, 1 );
-	assert( data );
-	
-	int i;
-	unsigned char *p = data;
-	for ( i = 0; i < size; i++ )
-	{
-		if ( i % 3 )
-		{
-			*p++ = data[i];
-		}
-	}
-	
-	return data;
-}
-
 int main( int argc, const char *argv[] )
 {
 	if ( argc < 3 )
@@ -255,13 +145,10 @@ int main( int argc, const char *argv[] )
 
 	//Read PNG file
 	int image_width, image_height, image_bpp, frame_count;
-	unsigned char *image_data = slurp_png( argv[2], &image_width, &image_height, &image_bpp );
-	//unsigned char *image_data = discard_alpha( png_data, image_width * image_height * image_bpp );
-	//if ( image_bpp == 4 ) printf( "warning: RGBA\n" );
+	unsigned char *image_data = stbi_load( argv[2], &image_width, &image_height, &image_bpp, 3 ); // force 3 bytes per pixel
 	assert( image_width == 4 && image_height % 4 == 0 && "bad dimensions..." );
-	assert( image_bpp == 3 && "has alpha, and I'm lazy" );
-	assert( image_data && "what the fuck" );
-	
+	assert( image_data && "stbi_load() failed" );
+
 	frame_count = image_height / 4;
 
 	//Reset the display
@@ -270,17 +157,13 @@ int main( int argc, const char *argv[] )
 	dispcmd( DISP_CLS );
 
 	//Main animation loop
-
 	while ( alive )
 	{
-		int i;
-		for ( i = 0; i < frame_count; i++ )
+		for ( int i = 0; i < frame_count; i++ )
 		{
-	
 			memcpy( disp, image_data + i * 16 * 3, 16 * 3 ); 
 			dispflush( );
-		
-		
+				
 			// Frame delay
 			struct timespec delay = 
 			{
@@ -290,6 +173,9 @@ int main( int argc, const char *argv[] )
 			nanosleep( &delay, NULL );
 		}
 	}
+
+	// Free image data
+	stbi_image_free( image_data );
 
 	return 0;
 }
