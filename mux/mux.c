@@ -52,7 +52,7 @@ ISR( USART_RX_vect )
 		{
 			//0 - CBK
 			case 0:
-				cursor = disp;
+				cursor = buf_back;
 				break;
 
 			//1 - CLS
