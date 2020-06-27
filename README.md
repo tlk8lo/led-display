@@ -14,7 +14,7 @@ Wyświetlacz to tak naprawdę taki multiplekser na sterydach i odrobina pamięci
 W folderze `mux` znajduje się program dla mikrokontrolera. Jego rolą jest oczywiście odbieranie poleceń rysowania wysłanych z komputera sterującego za pośrednictwem interfejsu UART (baudrate konfigurowany w `makefile`) i sterowanie macierzą diod.
 
 Podczas interakcji ze sterownikiem wyświetlacza, należy wiedzieć, że na jego stan składają się **pozycja kursora**, **akutalnie wyświetlany bufor** oraz zawartość buforów obrazu.
-Kontroler wspiera podwójne buforowanie danych obrazu by uniknąć nieprzyjemnego mrugania - wyświetlacz wyświetla zawartość bufora **przedniego**, podczas gdy przychodzące dane zapisywane są do bufora **tylnego**.
+Kontroler wspiera podwójne buforowanie danych obrazu by uniknąć nieprzyjemnego mrugania - wyświetlacz wyświetla zawartość bufora **przedniego**, podczas gdy przychodzące dane zapisywane są do bufora **tylnego**. W przypadku gdy podwójne buforowanie jest wyłączone, bufory tylny i przedni są tożsame.
 
 Każdy bajt odebrany przez UART jest interpretowany w przerwaniu odbiornika. Podobnie jak w przypadku interfejsu MIDI, najstarszy bit determinuje typ danych.
 Jeśli bajt stanowi fragment obrazu, przyjmuje on wartość 0, a jeśli jest poleceniem sterującym - 1. Bity 0-2 określają typ polecenia sterującego, a bity 3-6 stanowią jego parametr.
