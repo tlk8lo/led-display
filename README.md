@@ -38,7 +38,9 @@ Uwaga: Nasz mikrokontroler był upośledzony i wymagał korekty wewnętrzengo os
 ### mux-driver
 
 W folderze `mux-driver` znajduje się program na Linuxa do sterowania wyświetlaczem. Kod powinien być prosty do zrozumienia (na pewno bardziej niż ten dla AVR), więc chyba nie ma po co się rozpisywać.
-Program wysyła kolejne fragmenty 4x4 obrazu o rozmiarze 4x4N (dla naturalnych N) (czytanego za pomocą biblioteki stb) do wyświetlacza jako kolejne klatki w odpowiednich odstępach czasu za pośrednictwem wybranego interfejsu. 
+Program wysyła kolejne fragmenty 4x4 obrazu o rozmiarze 4x4N (dla naturalnych N) do wyświetlacza jako kolejne klatki w odpowiednich odstępach czasu za pośrednictwem wybranego interfejsu. 
 
 Użycie: `./muxd <interfejs> <plik obrazu> [czas między klatkami w ms]`<br>
 Przykład: `./muxd /dev/ttyUSB0 foo.png 200`<br>
+
+Program wykorzystuje bibliotekę [`stb_image.h`](https://github.com/nothings/stb) na licencji MIT.
