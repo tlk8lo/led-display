@@ -1,8 +1,8 @@
-# led-display
+# LED display
 
-A 4x4 RGB display powered by an ATtiny2313 and controlled over USART.
+A 4x4 RGB display powered by an ATtiny2313 and controlled over UART.
 
-Wyświetlacz RGB o rozdielczości 4x4 zbudowany w oparciu o mikrokontroler AVR ATtiny2313, sterowany za pośrednictwem interfejsu UART.
+Wyświetlacz RGB o rozdzielczości 4x4 zbudowany w oparciu o mikrokontroler AVR ATtiny2313, sterowany za pośrednictwem interfejsu UART.
 
 <img src=demo.gif></img>
 
@@ -11,12 +11,12 @@ Wyświetlacz RGB o rozdielczości 4x4 zbudowany w oparciu o mikrokontroler AVR A
 Wyświetlacz to tak naprawdę taki multiplekser na sterydach i odrobina pamięci - stąd też nazwy programów, niezmienne od zarania dziejów.
 
 ### mux
-W folderze `mux` znajduje się program dla mikrokontrolera. Jego rolą jest oczywiście odbieranie poleceń rysowania wysłanych z komputera sterującego za pośrednictwem interfejsu UART (buadrate konfigurowany w `makefile`) i sterowanie macierzą diod.
+W folderze `mux` znajduje się program dla mikrokontrolera. Jego rolą jest oczywiście odbieranie poleceń rysowania wysłanych z komputera sterującego za pośrednictwem interfejsu UART (baudrate konfigurowany w `makefile`) i sterowanie macierzą diod.
 
 Podczas interakcji ze sterownikiem wyświetlacza, należy wiedzieć, że na jego stan składają się **pozycja kursora**, **akutalnie wyświetlany bufor** oraz zawartość buforów obrazu.
 Kontroler wspiera podwójne buforowanie danych obrazu by uniknąć nieprzyjemnego mrugania - wyświetlacz wyświetla zawartość bufora **przedniego**, podczas gdy przychodzące dane zapisywane są do bufora **tylnego**.
 
-Każdy bajt odebrany przez USART jest interpretowany w przerwaniu odbiornika. Podobnie jak w przypadku interfejsu MIDI, najstarszy bit determinuje typ danych.
+Każdy bajt odebrany przez UART jest interpretowany w przerwaniu odbiornika. Podobnie jak w przypadku interfejsu MIDI, najstarszy bit determinuje typ danych.
 Jeśli bajt stanowi fragment obrazu, przyjmuje on wartość 0, a jeśli jest poleceniem sterującym - 1. Bity 0-2 określają typ polecenia sterującego, a bity 3-6 stanowią jego parametr.
 Obsługiwane polecenia wraz z krótkimi opisami zostały przedstawione w poniższej tabeli:
 |ID polecenia|Nazwa|Parametr|Opis|
